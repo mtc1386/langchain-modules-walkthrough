@@ -85,3 +85,30 @@ prompt = FewShotPromptTemplate(
 ```
 
 上述内容记录在 `prompt_03.py` 中。
+
+#### Partial prompt template
+
+简单说就是，在 `old template` 只提供部分的 input variables 得到 `new template`。用两个地方可以创建：
+
+1. 调用 `partial()`
+
+```py
+origin_prompt_template = PromptTemplate(
+    template="{input_1}--{input_2}", input_variables=["input_1", "input_2"])
+
+new_template = origin_prompt_template.partial(input_1="1")
+
+prompt = new_template.format(input_2="2")
+```
+
+2. 在 `PromptTemplate` 的构造方法中传入 `partial_variables` 参数，注意这种方式中，在 partial_variables 中提供的值不用被包含在 input_variables 中。
+
+```py
+template = PromptTemplate(template="{input_1} -- {input_2}", input_variables=[
+    "input_2"], partial_variables={"input_1": "5"})
+
+prompt = template.format(input_2="6")
+print(prompt)
+```
+
+上面两个方式，除了可以接受字符串的值以外，还可以接受函数，函数的签名需要返回字符串，相关代码记录在 `prompt_04.py` 中。
