@@ -57,3 +57,31 @@ class CustomPromptTemplate(StringPromptTemplate, BaseModel):
 ```
 
 上述内容记录在 `prompt_02.py` 中。
+
+#### Few-shot prompt templates
+
+在 Langchain 中提供 `FewShotPromptTemplate` 来处理，few-shot prompt template 包含两个元素 few-shot examples 和 formatter，few-shot examples 可以用 dict 来构造，formatter 必须是 PromptTemplate 对象。
+
+```py
+examples = [{"question": "Who lived longer, Muhammad Ali or Alan Turing?","answer":"""
+Are follow up questions needed here: Yes.
+Follow up: How old was Muhammad Ali when he died?
+Intermediate answer: Muhammad Ali was 74 years old when he died.
+Follow up: How old was Alan Turing when he died?
+Intermediate answer: Alan Turing was 41 years old when he died.
+So the final answer is: Muhammad Ali"""}]
+
+# prepare the formatter
+example_prompt = PromptTemplate(
+    input_variables=["question", "answer"], template="Question: {question}\n{answer}")
+
+# feed them into FewShotPromptTemplate
+prompt = FewShotPromptTemplate(
+    examples=examples,
+    example_prompt=example_prompt,
+    suffix="Question: {input}",
+    input_variables=["input"]
+)
+```
+
+上述内容记录在 `prompt_03.py` 中。
