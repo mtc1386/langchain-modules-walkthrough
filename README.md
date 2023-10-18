@@ -112,3 +112,42 @@ print(prompt)
 ```
 
 上面两个方式，除了可以接受字符串的值以外，还可以接受函数，函数的签名需要返回字符串，相关代码记录在 `prompt_04.py` 中。
+
+#### Template Composition
+
+如果想把多个小的 Prompt 组合构建一个大的 Prompt，可以使用 `PipelinePromptTemplate` 。大体分为两步：
+
+1. 定义最终的 Prompt Template，里面的 input variables 会被相应的小的 prompt template 生产的文本替换
+2. 把各部分的 Prompt Template 收集起来，数据结构为 List[Tuple]，传递到 `pipeline_prompts` 参数中。
+
+```py
+full_template = PromptTemplate.from_template("""\
+{first}
+
+{second}
+
+{third}
+""")
+
+
+template_1 = PromptTemplate.from_template("""\
+{example}
+""")
+
+template_2 = PromptTemplate.from_template("""\
+{question}
+""")
+
+template_3 = PromptTemplate.from_template("""\
+{answer}
+""")
+
+prompt_templates = [("first", template_1), ("second",
+                                            template_2), ("third", template_3)]
+
+pipeline_template = PipelinePromptTemplate(final_prompt=full_template,
+                                           pipeline_prompts=prompt_templates)
+
+prompt = pipeline_template.format(example="this is example",
+                                  question="this is question", answer="this is answer")
+```
