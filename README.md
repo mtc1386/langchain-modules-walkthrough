@@ -60,7 +60,7 @@ class CustomPromptTemplate(StringPromptTemplate, BaseModel):
 
 #### Few-shot prompt templates
 
-在 Langchain 中提供 `FewShotPromptTemplate` 来处理，few-shot prompt template 包含两个元素 few-shot examples 和 formatter，few-shot examples 可以用 dict 来构造，formatter 必须是 PromptTemplate 对象。
+在 Langchain 中提供 `FewShotPromptTemplate` 来处理，few-shot prompt template 包含两个元素 few-shot examples 和 formatter，few-shot examples 可以用 List[dict] 来构造，formatter 必须是 PromptTemplate 对象。
 
 ```py
 examples = [{"question": "Who lived longer, Muhammad Ali or Alan Turing?","answer":"""
@@ -85,6 +85,8 @@ prompt = FewShotPromptTemplate(
 ```
 
 上述内容记录在 `prompt_03.py` 中。
+
+当拥有大量 Examples 时，可能只想选择部分 Example 加入 template 中，你可以选择继承 `BaseExampleSelector` 来实现自定义的 Example Selector，或者选择使用 Langchain 提供的，都放在 `langchain.prompts.example_selector` 下面。
 
 #### Partial prompt template
 
