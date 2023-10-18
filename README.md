@@ -47,3 +47,13 @@ invalid_prompt = PromptTemplate(
     template="Tell me a {adjective} joke about {content}."
 )
 ```
+
+上述内容记录在 `prompt_01.py` 中。
+
+对于更复杂的 Promt Template 需求，Langchain 支持自定义模版，可以继承 `StringPromptTemplate`，用 `pydantic` 来校验 `input_variables`。需要实现方法 `format()->str` 来返回最终的 prompt，可以在该方法里封装更复杂的逻辑。
+
+```py
+class CustomPromptTemplate(StringPromptTemplate, BaseModel):
+```
+
+上述内容记录在 `prompt_02.py` 中。
