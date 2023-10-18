@@ -151,3 +151,45 @@ pipeline_template = PipelinePromptTemplate(final_prompt=full_template,
 prompt = pipeline_template.format(example="this is example",
                                   question="this is question", answer="this is answer")
 ```
+
+#### Template Serialization
+
+prompt template 可以存储在文件中，这样方便存储，分发，支持两种格式：JSON 和 YAML，Langchain 支持从文件读取 prompt，使用接口 `load_prompt`。
+简单的 prompt，需要提供三个字段 `_type`，`input_variables`, `template`
+
+```json
+{
+  "_type": "prompt",
+  "input_variables": ["first", "second"],
+  "template": "{first} {second}"
+}
+```
+
+```py
+prompt = load_prompt('prompt.json')
+prompt.format(first="F", second="S")
+```
+
+除了普通的 prompt，还支持 few-shot prompt, 并且把 example 和 prompt template 存在各自的文件中
+
+```json
+[
+  { "input": "happy", "output": "sad" },
+  { "input": "tail", "output": "head" }
+]
+```
+
+```json
+{
+  "_type": "few_shot",
+  "input_variables": ["adjective"],
+  "prefix": "Write antonyms for the following words.",
+  "example_prompt": {
+    "_type": "prompt",
+    "input_variables": ["input", "output"],
+    "template": "Input: {input}\nOutput: {output}"
+  },
+  "examples": "examples.json",
+  "suffix": "Input: {adjective}\nOutput:"
+}
+```
