@@ -305,3 +305,29 @@ chain = SimpleSequentialChain(
 ```
 
 上述内容记录在 `chains_03.py` 中。
+
+#### Transform Chain
+
+TransformChain 接受一个 function，可对输入进行一些变更并返回，通常也是 SequentialChain 中被使用，比如，只提取一大段文字的前 3 段，然后交由后续的 chain 继续处理。
+
+```py
+
+def transform_func(inputs: dict) -> dict:
+    text = inputs["text"]
+    shortened_text = "\n\n".join(text.split("\n\n")[:3])
+    return {"output_text": shortened_text}
+
+
+transform_chain = TransformChain(
+    input_variables=["text"], output_variables=["output_text"], transform=transform_func
+)
+
+prompt = PromptTemplate(input_variables=["output_text"], template=template)
+llm_chain = LLMChain(llm=llm, prompt=prompt)
+
+chain = SimpleSequentialChain(chains=[transform_chain, llm_chain])
+
+chain.run(LONG_TEXT)
+```
+
+上述内容记录在 `chains_04.py` 中。
