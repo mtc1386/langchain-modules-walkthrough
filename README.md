@@ -289,3 +289,19 @@ chain = MultiPromptChain(
 ```
 
 上述内容记录在 `chains_02.py` 中。
+
+#### Sequential Chains
+
+SimpleSequentialChain 可以把多个 chain 串联在一起，依次执行，执行的 output 是下一个 chain 的 input。
+
+```py
+
+synopsis_chain = LLMChain(llm=llm, prompt=synopsis_prompt_template)
+review_chain = LLMChain(llm=llm, prompt=prompt_template)
+
+chain = SimpleSequentialChain(
+    chains=[synopsis_chain, review_chain], verbose=True)
+
+```
+
+上述内容记录在 `chains_03.py` 中。
