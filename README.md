@@ -253,3 +253,39 @@ chain.invoke(query="Tell me a joke.")
 ```
 
 相关内容记录在 `chains_01.py` 中。
+
+#### Router Chains
+
+Langchain 提供的 RouterChain 可以从候选的 Chains 中选择一个最合适的，把 input 转发给它，让它来完成任务。
+
+MultiPromptChain 需要三个元素，router_chain 用来选择适合的 chain，destination_chain 是一个 Mapping[str,Chain] 对象，存储着所有可供选择的 Chain，default_chain 如果没有合适的 chain，则默认用这个 chain 来完成任务。
+
+其中涉及到的类有 MultiPromptChain, LLMRouterChain,
+
+```py
+
+... ...
+destination_chains = {}
+for p_info in prompt_infos:
+    name = p_info["name"]
+    prompt_template = p_info["prompt_template"]
+    prompt = PromptTemplate(template=prompt_template,
+                            input_variables=["input"])
+    chain = LLMChain(llm=llm, prompt=prompt)
+    destination_chains[name] = chain
+default_chain = ConversationChain(llm=llm, output_key="text")
+
+... ...
+router_chain = LLMRouterChain.from_llm(llm, router_prompt)
+
+... ...
+
+chain = MultiPromptChain(
+    router_chain=router_chain,
+    destination_chains=destination_chains,
+    default_chain=default_chain,
+    verbose=True,
+)
+```
+
+上述内容记录在 `chains_02.py` 中。
