@@ -195,3 +195,35 @@ prompt.format(first="F", second="S")
   "suffix": "Input: {adjective}\nOutput:"
 }
 ```
+
+### Output Parsers
+
+Lang Model 生成的内容是文本，你可以要求文本内容包含结构化的信息，这样方便解析。而 output 的样式是由 prompt 决定的，得通过 prompt 要求 Lang Model 生成想要的内容。
+
+所以，Langchain 提供的 Outparser 一般是这样的工作流程：
+
+1. 定义一个 Outparser。
+2. 调用 parser.get_format_instrcutions，填入 prompt 中。
+3. 调用 parser.parse(output)，解析结构为想要的结构。
+
+```py
+class Joke(BaseModel)
+...
+
+parser = PydanticOutputParser(pydantic_object=Joke)
+...
+
+prompt_template = PromptTemplate(
+    template="Answer user quesry. \n {format_instructions} \n{query}\n",
+    input_variables=["query"],
+    partial_variables={"format_instructions": parser.get_format_instructions()})
+...
+
+output = llm(prompt_template.format(query="Tell me a joke."))
+parser.parse(output)
+
+```
+
+上述内容记录在 `outputparsers_01.py`
+
+除了基于 Pydantic 的 OutputParser，Langchain 还提供了几种常见的 OutoutParser，如，CommaSeparatedListOutputParser, DatetimeOutputParser, EnumOutputParser, OutputFixingParser, RetryOutputParser, StructuredOutputParser, XMLOutputParser.
