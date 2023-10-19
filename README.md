@@ -227,3 +227,29 @@ parser.parse(output)
 上述内容记录在 `outputparsers_01.py`
 
 除了基于 Pydantic 的 OutputParser，Langchain 还提供了几种常见的 OutoutParser，如，CommaSeparatedListOutputParser, DatetimeOutputParser, EnumOutputParser, OutputFixingParser, RetryOutputParser, StructuredOutputParser, XMLOutputParser.
+
+## Chains
+
+在了解 Model I/O 之后，发现交互可以概括为：construct prompt -> call llm -> parse output。 Langchain 的 chain 可以组合这些步骤，当然 chain 能做更多的事，我们先从一个简单的例子，看看 chain 是什么样的。
+
+用 chain 把 Prompt, Llm, Outputparser 组合起来，Langchain 建议用最新的 chain 语法（LangChain Expression Language），同时旧的 Chain interface 仍然支持中。
+
+```py
+class Joke(BaseModel)
+...
+
+parser = PydanticOutputParser(pydantic_object=Joke)
+...
+
+prompt = PromptTemplate(
+    template="Answer user quesry. \n {format_instructions} \n{query}\n",
+    input_variables=["query"],
+    partial_variables={"format_instructions": parser.get_format_instructions()})
+...
+
+chain = prompt | llm | parser
+chain.invoke(query="Tell me a joke.")
+
+```
+
+相关内容记录在 `chains_01.py` 中。
