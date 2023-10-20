@@ -331,3 +331,39 @@ chain.run(LONG_TEXT)
 ```
 
 上述内容记录在 `chains_04.py` 中。
+
+## Retrieval
+
+有时，LLM 需要用户指定的数据，但这些数据并不是 LLM 训练集的一部分，要使这些数据能被 LLM 使用，通常会这样做：先收集数据，比如 PDF，Text，社交媒体的文本。在收集到后，会进行一些处理，比如把大文本裁剪为多个更小的 chunk，这个步骤叫做 transform，再然后让 llm 对这些 chunk 生成 Embedding，
+Embedding 是 vector 格式的数据来表示一个文本的语义，这样就可以在 vector space 中寻找语义相似的文本，简单说就是在 vector space 中越靠近表示越相似。这些 Embedding 会被存入 vector database，稍后被取出并输入模型进行最后结果的生成。
+
+Langchain 提供的 embeddings 功能都放在 `langchain.embeddings` 里。
+
+根据通常的流程：
+
+1. load data
+
+```py
+full_text = open("state_of_the_union.txt", "r").read()
+```
+
+2. transform ，比如裁剪文本
+
+```py
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+texts = text_splitter.split_text(full_text)
+```
+
+3. embed each chunck and inject into db
+
+```py
+embeddings = OpenAIEmbeddings()
+db = Chroma.from_texts(texts, embeddings)
+```
+
+4. retrieve from db
+
+```py
+retriver = db.as_retriever()
+retriver.invoke(query)
+```
