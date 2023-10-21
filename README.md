@@ -388,3 +388,108 @@ conversation = LLMChain(llm=llm, prompt=prompt, memory=memory)
 conversation({"question": " How are you?"})
 conversation({"question": "what's weather today?"})
 ```
+
+## Agents
+
+Agent 的概念是把 LLM 当作一个推理引擎(Reasoning Engine)来选择下一步行为。Langchain 定义了几个术语来描述这个概念
+
+1. AgentAction 表示要执行的动作，通常是一个函数。
+2. AgentFinish 表示 Agent 的工作已结束，需要把结构返回给用户。
+3. intermediate_steps 是一个数组，记录之前的 action 以及相应的结果。
+
+Agent 的构建与 Chain 十分类似，不一样的地方在于，你要事先定义好 action，并把它与 llm 绑定。Agent 的运行原理类似在一个 loop 中，检查结果，选择 next action 或者 finish，所以 Langchain 提供 AgentExector 来封装这个运行逻辑。
+
+另外，Langchain 文档提示目前只有通过 OpenAI Function Calling 来创建的 Agent 才是最可靠的。
+
+下面是步骤：
+
+1. 先准备 action，具体即使函数，Langchain 用 tool 来表示
+
+```py
+from langchain.agents import tool
+
+@tool
+def get_word_length(word: str) -> int:
+    """Returns the length of a word."""
+    return len(word)
+
+tools = [get_word_length]
+```
+
+2. 构建 prompt，注意要留 `agent_scratchpad` 部分，用于填入之前的 intermediate_steps
+
+```py
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are very powerful assistant, but bad at calculating lengths of words."),
+    ("user", "{input}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
+])
+```
+
+3. 绑定 llm 和 tools
+
+```py
+from langchain.tools.render import format_tool_to_openai_function
+llm_with_tools = llm.bind(
+    functions=[format_tool_to_openai_function(t) for t in tools]
+)
+```
+
+4. 创建 agent
+
+```py
+from langchain.agents.format_scratchpad import format_to_openai_functions
+from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
+agent = {
+    "input": lambda x: x["input"],
+    "agent_scratchpad": lambda x: format_to_openai_functions(x['intermediate_steps'])
+} | prompt | llm_with_tools | OpenAIFunctionsAgentOutputParser()
+```
+
+5. Langchain 的 AgentExecutor 帮忙简化我们需要自己写的 agent runtime 的工作
+
+```py
+from langchain.agents import AgentExecutor
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+agent_executor.invoke({"input": "how many letters in the word educa?"})
+```
+
+### 给 Agent 增加 Memory 功能
+
+需要在 prompt 中添加 Memory 填入的区别，每次运行得出结果后，记录 input 和 output 到 Memory 下次调用时传入。
+
+1. prompt 中需要增加 Memoery Variables 区域
+
+```py
+from langchain.prompts import MessagesPlaceholder
+
+MEMORY_KEY = "chat_history"
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are very powerful assistant, but bad at calculating lengths of words."),
+    MessagesPlaceholder(variable_name=MEMORY_KEY),
+    ("user", "{input}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
+])
+
+agent = {
+    "input": lambda x: x["input"],
+    "agent_scratchpad": lambda x: format_to_openai_functions(x['intermediate_steps']),
+    "chat_history": lambda x: x["chat_history"]
+} | prompt | llm_with_tools | OpenAIFunctionsAgentOutputParser()
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+```
+
+2. 每次执行后，记录 input 和 output，并在下次执行时传入
+
+```py
+from langchain.schema.messages import HumanMessage, AIMessage
+chat_history = []
+
+input1 = "how many letters in the word educa?"
+result = agent_executor.invoke({"input": input1, "chat_history": chat_history})
+chat_history.append(HumanMessage(content=input1))
+chat_history.append(AIMessage(content=result['output']))
+agent_executor.invoke({"input": "is that a real word?", "chat_history": chat_history})
+```
