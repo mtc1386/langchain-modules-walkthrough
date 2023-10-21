@@ -367,3 +367,24 @@ db = Chroma.from_texts(texts, embeddings)
 retriver = db.as_retriever()
 retriver.invoke(query)
 ```
+
+## Memory
+
+Memory 在这里的意思是指，能记住之前的与 LLM 交互的信息，比如，chat 类型的应用就需要此特性。Memory System 两个最基本的功能是 Reading 和 Writing，下面结合 Chain 来做进一步解释：
+
+1. Chain 在接受 input 时，会从 Memory 中读取之前的信息加入到 Prompt 中，在交给 LLM 处理。
+2. 当 LLM 生成结果时，会把当前的 input 和 output 写入 Memory 中，供下一次交互时获取。
+
+常用的 Memory Class 有 ConversationBufferMemory, ConversationEntityMemory, ConversationKGMemory，等等，都在 `langchain.memory` 下
+
+```py
+prompt = PromptTemplate.from_template(template=template)
+memory = ConversationBufferMemory(
+    memory_key="chat_history", ai_prefix="AI Assistant", human_prefix="New Human")
+memory.save_context({"input": "Hi"}, {"output": "what's up"})
+
+conversation = LLMChain(llm=llm, prompt=prompt, memory=memory)
+
+conversation({"question": " How are you?"})
+conversation({"question": "what's weather today?"})
+```
