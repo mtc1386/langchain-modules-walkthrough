@@ -13,7 +13,7 @@
 
 ## 准备
 
-LLM 选择的是 \*\*，Langchain 提供 `llama-cpp-python` 来支持与这个 LLM 的交互。开发平台是 MacOS M1
+LLM 选择的是 `llama-2-7b`，Langchain 提供 `llama-cpp-python` 来支持与这个 LLM 的交互。开发平台是 MacOS M1
 
 ## Model I/O
 
