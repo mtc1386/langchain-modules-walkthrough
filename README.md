@@ -58,7 +58,13 @@ class CustomPromptTemplate(StringPromptTemplate, BaseModel):
 
 上述内容记录在 `prompt_02.py` 中。
 
-#### Few-shot prompt templates
+#### Few-Shot Prompt Templates
+
+#### 什么是 Zero-Shot Prompt 和 Few-Shot Prompt？
+**Zero-Shot Prompt**: 指的是 Prompt 不提供额外信息，只含用户的指令或问题，依赖 LLM 的预训练数据来生成答案。  
+**Few-Shot Prompt**: 指的是在 Prompt 中包含额外的信息，比如 Examples, 让 LLM 在更多 Context 下生成答案。
+
+Zero-Shot Prompt 适用于处理简单的任务，如果问题变得复杂，可以通过 Few-Shot Prompt 来指导 LLM 生成预期的答案。
 
 在 Langchain 中提供 `FewShotPromptTemplate` 来处理，few-shot prompt template 包含两个元素 few-shot examples 和 formatter，few-shot examples 可以用 List[dict] 来构造，formatter 必须是 PromptTemplate 对象。
 
