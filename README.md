@@ -397,6 +397,9 @@ conversation({"question": "what's weather today?"})
 
 ## Agents
 
+### 什么是 Agent?
+LLM 的知识是基于训练集的，这意味着它的知识即不实时，也不全面。某些问题虽然简单，却无法回答，比如：今天的天气如何，未来两天天气如何？可是，天气相关的信息调用 API 就可以获得。Agent 的概念就是让 LLM 拥有调用 API 的能力，或者说获取外部信息的能力。除了调用 API，还有很多不同的方式获取信息，这些方式统一用 tool 来表示，Agent 则是用来连接 LLM 和这些 tools 的桥梁。当 LLM 配备 Agent 时，就能处理 「今天天气如何」这种问题了，LLM 会让 Agent 去调用相关的 Tool，在这里就是天气相关的 API，并把内容添加到回复里。
+
 Agent 的概念是把 LLM 当作一个推理引擎(Reasoning Engine)来选择下一步行为。Langchain 定义了几个术语来描述这个概念
 
 1. AgentAction 表示要执行的动作，通常是一个函数。
